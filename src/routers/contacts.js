@@ -3,7 +3,7 @@ import {
   getContactsController,
   getContactByIdController,
   createContactController,
-  patchContactController,
+  updateContactController,
   deleteContactController,
 } from '../controllers/contacts.js';
 
@@ -14,5 +14,5 @@ export const contactsRouter = express.Router();
 contactsRouter.get('/', ctrlWrapper(getContactsController));
 contactsRouter.get('/:contactId', ctrlWrapper(getContactByIdController));
 contactsRouter.post('/', createContactController);
-contactsRouter.patch('/:contactId', patchContactController);
+contactsRouter.patch('/:contactId', updateContactController);
 contactsRouter.delete('/:contactId', deleteContactController);
