@@ -5,7 +5,7 @@ import cors from 'cors';
 import { getEnvVar } from './utils/getEnvVar.js';
 import { contactsRouter } from './routers/contacts.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 const PORT = Number(getEnvVar('PORT', '3000'));
 
