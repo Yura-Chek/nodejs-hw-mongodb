@@ -1,4 +1,5 @@
 import createError from 'http-errors';
+import { ContactsCollection } from '../models/contact.js';
 import {
   getAllContacts,
   getContactById,
@@ -8,12 +9,34 @@ import {
 } from '../services/contacts.js';
 
 export const getContactsController = async (req, res) => {
-  const contacts = await getAllContacts();
+  const { page = 1, perPage = 10 } = req.query;
+
+  const currentPage = parseInt(page, 10);
+  const itemsPerPage = parseInt(perPage, 10);
+
+  const skip = (currentPage - 1) * itemsPerPage;
+
+  const [contacts, totalItems] = await Promise.all([
+    ContactsCollection.find().skip(skip).limit(itemsPerPage),
+    ContactsCollection.countDocuments(),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
 
   res.status(200).json({
     status: 200,
     message: 'Successfully found contacts!',
-    data: contacts,
+    data: {
+      data: contacts,
+      page: currentPage,
+      perPage: itemsPerPage,
+      totalItems,
+      totalPages,
+      hasPreviousPage,
+      hasNextPage,
+    },
   });
 };
 
