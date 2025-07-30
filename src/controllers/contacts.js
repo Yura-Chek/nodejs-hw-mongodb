@@ -7,6 +7,7 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
 
 export const getContactsController = async (req, res) => {
   const { page = 1, perPage = 10 } = req.query;
@@ -16,8 +17,13 @@ export const getContactsController = async (req, res) => {
 
   const skip = (currentPage - 1) * itemsPerPage;
 
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+
   const [contacts, totalItems] = await Promise.all([
-    ContactsCollection.find().skip(skip).limit(itemsPerPage),
+    ContactsCollection.find()
+      .sort({ [sortBy]: sortOrder }) // 🧠 Додаємо сортування
+      .skip(skip)
+      .limit(itemsPerPage),
     ContactsCollection.countDocuments(),
   ]);
 
