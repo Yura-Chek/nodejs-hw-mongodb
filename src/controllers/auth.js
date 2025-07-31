@@ -1,4 +1,5 @@
 import { registerUser } from '../services/auth.js';
+import * as authService from '../services/auth.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -12,4 +13,26 @@ export const register = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  const { accessToken, refreshToken } = await authService.loginUser(
+    email,
+    password,
+  );
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  res.status(200).json({
+    status: 200,
+    message: 'Successfully logged in an user!',
+    data: { accessToken },
+  });
 };
