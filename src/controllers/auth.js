@@ -1,6 +1,5 @@
 import { registerUser } from '../services/auth.js';
 import * as authService from '../services/auth.js';
-import { refreshSession } from '../services/auth.js';
 import asyncHandler from 'express-async-handler';
 
 export const register = async (req, res, next) => {
@@ -40,7 +39,7 @@ export const login = async (req, res) => {
 };
 
 export const refresh = asyncHandler(async (req, res) => {
-  const { accessToken } = await refreshSession(req);
+  const { accessToken } = await authService.refreshSession(req);
 
   res.status(200).json({
     status: 200,
@@ -49,4 +48,16 @@ export const refresh = asyncHandler(async (req, res) => {
       accessToken,
     },
   });
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  await authService.logoutUser(req);
+
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  res.sendStatus(204);
 });

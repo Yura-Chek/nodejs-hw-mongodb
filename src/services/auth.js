@@ -37,9 +37,10 @@ export const loginUser = async (email, password) => {
     throw createHttpError(401, 'Email or password is wrong');
   }
 
+  // Видаляємо всі сесії користувача перед створенням нової
   await Session.deleteMany({ userId: user._id });
 
-  const payload = { id: user._id, email: user.email };
+  const payload = { id: user._id.toString(), email: user.email };
 
   const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRATION,
@@ -75,36 +76,64 @@ export const refreshSession = async (req) => {
   let payload;
 
   try {
-    payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+    payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
   } catch (err) {
     throw createHttpError(401, 'Invalid refresh token');
   }
 
-  await Session.findOneAndDelete({ sid: payload.sid });
+  const userId = payload.id;
 
-  const userId = payload.uid;
+  await Session.deleteMany({ userId });
 
-  const newPayload = { uid: userId, sid: crypto.randomUUID() };
+  const newPayload = { id: userId, email: payload.email };
 
-  const accessToken = jwt.sign(newPayload, process.env.ACCESS_SECRET, {
-    expiresIn: '15m',
+  const accessToken = jwt.sign(newPayload, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
   });
 
-  const newRefreshToken = jwt.sign(newPayload, process.env.REFRESH_SECRET, {
-    expiresIn: '30d',
+  const newRefreshToken = jwt.sign(newPayload, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRATION,
   });
+
+  const accessTokenValidUntil = new Date(Date.now() + 15 * 60 * 1000);
+  const refreshTokenValidUntil = new Date(
+    Date.now() + 30 * 24 * 60 * 60 * 1000,
+  );
 
   await Session.create({
-    uid: userId,
-    sid: newPayload.sid,
+    userId,
+    accessToken,
+    refreshToken: newRefreshToken,
+    accessTokenValidUntil,
+    refreshTokenValidUntil,
   });
 
   req.res.cookie('refreshToken', newRefreshToken, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   return { accessToken };
+};
+
+export const logoutUser = async (req) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    throw createHttpError(401, 'Refresh token is missing');
+  }
+
+  let payload;
+
+  try {
+    payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  } catch (err) {
+    throw createHttpError(401, 'Invalid refresh token');
+  }
+
+  const userId = payload.id;
+
+  await Session.deleteMany({ userId });
 };
