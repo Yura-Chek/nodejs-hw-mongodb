@@ -1,5 +1,7 @@
 import { registerUser } from '../services/auth.js';
 import * as authService from '../services/auth.js';
+import { refreshSession } from '../services/auth.js';
+import asyncHandler from 'express-async-handler';
 
 export const register = async (req, res, next) => {
   try {
@@ -36,3 +38,15 @@ export const login = async (req, res) => {
     data: { accessToken },
   });
 };
+
+export const refresh = asyncHandler(async (req, res) => {
+  const { accessToken } = await refreshSession(req);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Successfully refreshed a session!',
+    data: {
+      accessToken,
+    },
+  });
+});

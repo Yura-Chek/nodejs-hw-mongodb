@@ -64,3 +64,47 @@ export const loginUser = async (email, password) => {
 
   return { accessToken, refreshToken };
 };
+
+export const refreshSession = async (req) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    throw createHttpError(401, 'Refresh token is missing');
+  }
+
+  let payload;
+
+  try {
+    payload = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+  } catch (err) {
+    throw createHttpError(401, 'Invalid refresh token');
+  }
+
+  await Session.findOneAndDelete({ sid: payload.sid });
+
+  const userId = payload.uid;
+
+  const newPayload = { uid: userId, sid: crypto.randomUUID() };
+
+  const accessToken = jwt.sign(newPayload, process.env.ACCESS_SECRET, {
+    expiresIn: '15m',
+  });
+
+  const newRefreshToken = jwt.sign(newPayload, process.env.REFRESH_SECRET, {
+    expiresIn: '30d',
+  });
+
+  await Session.create({
+    uid: userId,
+    sid: newPayload.sid,
+  });
+
+  req.res.cookie('refreshToken', newRefreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+
+  return { accessToken };
+};
