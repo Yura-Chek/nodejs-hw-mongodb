@@ -1,4 +1,5 @@
 import createError from 'http-errors';
+import { ContactsCollection } from '../models/contact.js';
 import {
   getAllContacts,
   getContactById,
@@ -9,39 +10,11 @@ import {
 import { parseSortParams } from '../utils/parseSortParams.js';
 
 export const getContactsController = async (req, res) => {
-  const { page = 1, perPage = 10 } = req.query;
-  const { _id: userId } = req.user;
-
-  const currentPage = parseInt(page, 10);
-  const itemsPerPage = parseInt(perPage, 10);
-  const skip = (currentPage - 1) * itemsPerPage;
-
-  const { sortBy, sortOrder } = parseSortParams(req.query);
-
-  const [contacts, totalItems] = await Promise.all([
-    ContactsCollection.find({ userId })
-      .sort({ [sortBy]: sortOrder })
-      .skip(skip)
-      .limit(itemsPerPage),
-    ContactsCollection.countDocuments({ userId }),
-  ]);
-
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const hasPreviousPage = currentPage > 1;
-  const hasNextPage = currentPage < totalPages;
-
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully found contacts!',
-    data: {
-      data: contacts,
-      page: currentPage,
-      perPage: itemsPerPage,
-      totalItems,
-      totalPages,
-      hasPreviousPage,
-      hasNextPage,
-    },
+  const contact = await postContact({ ...req.body, userId: req.user._id });
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully created a contact!',
+    data: contact,
   });
 };
 
@@ -80,7 +53,6 @@ export const createContactController = async (req, res) => {
       email,
       isFavourite,
       contactType,
-      userId: req.user._id,
     },
     userId,
   );

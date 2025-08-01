@@ -1,28 +1,25 @@
-import { registerUser } from '../services/auth.js';
-import * as authService from '../services/auth.js';
+import {
+  registerUser,
+  loginUser,
+  refreshSession,
+  logoutUser,
+} from '../services/auth.js';
 import asyncHandler from 'express-async-handler';
 
-export const register = async (req, res, next) => {
-  try {
-    const user = await registerUser(req.body);
+export const register = asyncHandler(async (req, res) => {
+  const user = await registerUser(req.body);
 
-    res.status(201).json({
-      status: 201,
-      message: 'Successfully registered a user!',
-      data: user,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully registered a user!',
+    data: user,
+  });
+});
 
-export const login = async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const { accessToken, refreshToken } = await authService.loginUser(
-    email,
-    password,
-  );
+  const { accessToken, refreshToken } = await loginUser(email, password);
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
@@ -33,25 +30,23 @@ export const login = async (req, res) => {
 
   res.status(200).json({
     status: 200,
-    message: 'Successfully logged in an user!',
+    message: 'Successfully logged in a user!',
     data: { accessToken },
   });
-};
+});
 
 export const refresh = asyncHandler(async (req, res) => {
-  const { accessToken } = await authService.refreshSession(req);
+  const { accessToken } = await refreshSession(req);
 
   res.status(200).json({
     status: 200,
     message: 'Successfully refreshed a session!',
-    data: {
-      accessToken,
-    },
+    data: { accessToken },
   });
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  await authService.logoutUser(req);
+  await logoutUser(req);
 
   res.clearCookie('refreshToken', {
     httpOnly: true,

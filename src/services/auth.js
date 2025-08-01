@@ -22,7 +22,10 @@ export const registerUser = async ({ name, email, password }) => {
     password: hashedPassword,
   });
 
-  return user.toJSON();
+  const userObj = user.toObject();
+  delete userObj.password;
+
+  return userObj;
 };
 
 export const loginUser = async (email, password) => {
@@ -37,7 +40,6 @@ export const loginUser = async (email, password) => {
     throw createHttpError(401, 'Email or password is wrong');
   }
 
-  // Видаляємо всі сесії користувача перед створенням нової
   await Session.deleteMany({ userId: user._id });
 
   const payload = { id: user._id.toString(), email: user.email };
@@ -74,7 +76,6 @@ export const refreshSession = async (req) => {
   }
 
   let payload;
-
   try {
     payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
   } catch (err) {
@@ -126,7 +127,6 @@ export const logoutUser = async (req) => {
   }
 
   let payload;
-
   try {
     payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
   } catch (err) {
@@ -134,6 +134,5 @@ export const logoutUser = async (req) => {
   }
 
   const userId = payload.id;
-
   await Session.deleteMany({ userId });
 };
