@@ -1,5 +1,4 @@
 import createError from 'http-errors';
-import { ContactsCollection } from '../models/contact.js';
 import {
   getAllContacts,
   getContactById,
@@ -7,20 +6,23 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
-import { parseSortParams } from '../utils/parseSortParams.js';
 
+// Контролер для отримання всіх контактів користувача
 export const getContactsController = async (req, res) => {
-  const contact = await postContact({ ...req.body, userId: req.user._id });
-  res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
-    data: contact,
+  const { id: userId } = req.user; // беремо userId як id
+  const contacts = await getAllContacts(userId);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Successfully retrieved contacts!',
+    data: contacts,
   });
 };
 
+// Контролер для отримання контакту по id
 export const getContactByIdController = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const { id: userId } = req.user;
 
   const contact = await getContactById(contactId, userId);
 
@@ -35,9 +37,10 @@ export const getContactByIdController = async (req, res) => {
   });
 };
 
+// Контролер для створення нового контакту
 export const createContactController = async (req, res) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
-  const { _id: userId } = req.user;
+  const { id: userId } = req.user;
 
   if (!name || !phoneNumber || !contactType) {
     throw createError(
@@ -64,9 +67,10 @@ export const createContactController = async (req, res) => {
   });
 };
 
+// Контролер для оновлення контакту
 export const updateContactController = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const { id: userId } = req.user;
 
   const updatedContact = await updateContact(contactId, req.body, userId);
 
@@ -81,9 +85,10 @@ export const updateContactController = async (req, res) => {
   });
 };
 
+// Контролер для видалення контакту
 export const deleteContactController = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const { id: userId } = req.user;
 
   const deleted = await deleteContact(contactId, userId);
 
