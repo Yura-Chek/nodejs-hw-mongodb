@@ -36,7 +36,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const refresh = asyncHandler(async (req, res) => {
-  const { accessToken } = await refreshSession(req);
+  const { accessToken } = await refreshSession(req, res);
 
   res.status(200).json({
     status: 200,
@@ -46,7 +46,9 @@ export const refresh = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  await logoutUser(req);
+  const refreshToken = req.cookies.refreshToken;
+
+  await logoutUser(refreshToken);
 
   res.clearCookie('refreshToken', {
     httpOnly: true,

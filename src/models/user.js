@@ -15,6 +15,10 @@ const usersSchema = new Schema(
       type: String,
       required: true,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false },
 );
@@ -22,6 +26,7 @@ const usersSchema = new Schema(
 usersSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.refreshToken;
   return obj;
 };
 

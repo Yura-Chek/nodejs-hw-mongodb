@@ -68,7 +68,7 @@ export const loginUser = async (email, password) => {
   return { accessToken, refreshToken };
 };
 
-export const refreshSession = async (req) => {
+export const refreshSession = async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
@@ -109,7 +109,7 @@ export const refreshSession = async (req) => {
     refreshTokenValidUntil,
   });
 
-  req.res.cookie('refreshToken', newRefreshToken, {
+  res.cookie('refreshToken', newRefreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -119,9 +119,7 @@ export const refreshSession = async (req) => {
   return { accessToken };
 };
 
-export const logoutUser = async (req) => {
-  const { refreshToken } = req.cookies;
-
+export const logoutUser = async (refreshToken) => {
   if (!refreshToken) {
     throw createHttpError(401, 'Refresh token is missing');
   }

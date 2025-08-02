@@ -6,20 +6,41 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
 
-// Контролер для отримання всіх контактів користувача
 export const getContactsController = async (req, res) => {
-  const { id: userId } = req.user; // беремо userId як id
-  const contacts = await getAllContacts(userId);
+  const { id: userId } = req.user;
+
+  const { page = 1, perPage = 10 } = req.query;
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+
+  const { contacts, totalItems, totalPages, currentPage, itemsPerPage } =
+    await getAllContacts({
+      userId,
+      page,
+      perPage,
+      sortBy,
+      sortOrder,
+    });
+
+  const hasPreviousPage = currentPage > 1;
+  const hasNextPage = currentPage < totalPages;
 
   res.status(200).json({
     status: 200,
     message: 'Successfully retrieved contacts!',
-    data: contacts,
+    data: {
+      data: contacts,
+      page: currentPage,
+      perPage: itemsPerPage,
+      totalItems,
+      totalPages,
+      hasPreviousPage,
+      hasNextPage,
+    },
   });
 };
 
-// Контролер для отримання контакту по id
 export const getContactByIdController = async (req, res) => {
   const { contactId } = req.params;
   const { id: userId } = req.user;
@@ -37,7 +58,6 @@ export const getContactByIdController = async (req, res) => {
   });
 };
 
-// Контролер для створення нового контакту
 export const createContactController = async (req, res) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
   const { id: userId } = req.user;
@@ -67,7 +87,6 @@ export const createContactController = async (req, res) => {
   });
 };
 
-// Контролер для оновлення контакту
 export const updateContactController = async (req, res) => {
   const { contactId } = req.params;
   const { id: userId } = req.user;
@@ -85,7 +104,6 @@ export const updateContactController = async (req, res) => {
   });
 };
 
-// Контролер для видалення контакту
 export const deleteContactController = async (req, res) => {
   const { contactId } = req.params;
   const { id: userId } = req.user;
