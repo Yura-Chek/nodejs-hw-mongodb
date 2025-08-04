@@ -138,3 +138,14 @@ export const logoutUser = async (refreshToken) => {
 export async function findUserByEmail(email) {
   return await User.findOne({ email });
 }
+
+export const updatePasswordAndClearSession = async (email, newPassword) => {
+  const user = await User.findOne({ email });
+  if (!user) return null;
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.sessionId = null;
+  await user.save();
+
+  return user;
+};

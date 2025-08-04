@@ -8,7 +8,10 @@ import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import createHttpError from 'http-errors';
-import { findUserByEmail } from '../services/auth.js';
+import {
+  findUserByEmail,
+  updatePasswordAndClearSession,
+} from '../services/auth.js';
 import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const register = asyncHandler(async (req, res) => {
@@ -113,3 +116,31 @@ export const sendResetEmail = asyncHandler(async (req, res) => {
     data: {},
   });
 });
+
+export const resetPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  let payload;
+  try {
+    const secret = getEnvVar('JWT_SECRET');
+    payload = jwt.verify(token, secret);
+  } catch (error) {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+
+  const userEmail = payload.email;
+  if (!userEmail) {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+
+  const user = await updatePasswordAndClearSession(userEmail, password);
+  if (!user) {
+    throw createHttpError(404, 'User not found!');
+  }
+
+  res.status(200).json({
+    status: 200,
+    message: 'Password has been successfully reset.',
+    data: {},
+  });
+};
