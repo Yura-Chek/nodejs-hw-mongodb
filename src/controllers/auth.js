@@ -5,6 +5,11 @@ import {
   logoutUser,
 } from '../services/auth.js';
 import asyncHandler from 'express-async-handler';
+import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import createHttpError from 'http-errors';
+import { findUserByEmail } from '../services/auth.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const register = asyncHandler(async (req, res) => {
   const user = await registerUser(req.body);
@@ -57,4 +62,54 @@ export const logout = asyncHandler(async (req, res) => {
   });
 
   res.sendStatus(204);
+});
+
+export const sendResetEmail = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    throw createHttpError(404, 'User not found!');
+  }
+
+  const token = jwt.sign({ email }, getEnvVar('JWT_SECRET'), {
+    expiresIn: '5m',
+  });
+  const resetUrl = `${getEnvVar('APP_DOMAIN')}/reset-password?token=${token}`;
+
+  const transporter = nodemailer.createTransport({
+    host: getEnvVar('SMTP_HOST'),
+    port: Number(getEnvVar('SMTP_PORT')),
+    secure: true,
+    auth: {
+      user: getEnvVar('SMTP_USER'),
+      pass: getEnvVar('SMTP_PASSWORD'),
+    },
+  });
+
+  const mail = {
+    from: getEnvVar('SMTP_FROM'),
+    to: email,
+    subject: 'Reset your password',
+    html: `<p>To reset your password, click the link below:</p>
+           <a href="${resetUrl}">${resetUrl}</a>
+           <p>This link will expire in 5 minutes.</p>`,
+  };
+
+  try {
+    await transporter.sendMail(mail);
+  } catch (err) {
+    console.error('Error sending email:', err);
+    throw createHttpError(500, {
+      message: 'Failed to send the email, please try again later.',
+      reason: err.message,
+    });
+  }
+
+  res.status(200).json({
+    status: 200,
+    message: 'Reset password email has been successfully sent.',
+    data: {},
+  });
 });

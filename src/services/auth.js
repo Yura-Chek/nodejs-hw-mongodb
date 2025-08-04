@@ -134,3 +134,7 @@ export const logoutUser = async (refreshToken) => {
   const userId = payload.id;
   await Session.deleteMany({ userId });
 };
+
+export async function findUserByEmail(email) {
+  return await User.findOne({ email });
+}
