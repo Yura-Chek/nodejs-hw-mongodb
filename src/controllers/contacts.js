@@ -7,6 +7,7 @@ import {
   deleteContact,
 } from '../services/contacts.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 
 export const getContactsController = async (req, res) => {
   const { id: userId } = req.user;
@@ -115,4 +116,25 @@ export const deleteContactController = async (req, res) => {
   }
 
   res.status(204).send();
+};
+
+export const postContact = async (req, res, next) => {
+  const photo = req.file;
+  let photoUrl;
+
+  if (photo && getEnvVar('ENABLE_CLOUDINARY') === 'true') {
+    photoUrl = await saveFileToCloudinary(photo);
+  }
+
+  const result = await Contact.create({
+    ...req.body,
+    userId: req.user._id,
+    photo: photoUrl,
+  });
+
+  res.status(201).json({
+    status: 201,
+    message: 'Contact successfully created',
+    data: result,
+  });
 };

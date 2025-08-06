@@ -1,4 +1,6 @@
 import express from 'express';
+import multer from 'multer';
+
 import {
   getContactsController,
   getContactByIdController,
@@ -14,7 +16,11 @@ import {
   validationSchema,
   contactUpdateSchema,
 } from '../validation/contacts.js';
-import { authenticate } from '../middlewares/auth.js'; // <-- додано
+import { authenticate } from '../middlewares/auth.js';
+
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+
+const upload = multer({ dest: 'temp/' });
 
 export const contactsRouter = express.Router();
 
@@ -30,16 +36,37 @@ contactsRouter.get(
 contactsRouter.post(
   '/',
   authenticate,
+  upload.single('photo'),
   validateBody(validationSchema),
-  ctrlWrapper(createContactController),
+  ctrlWrapper(async (req, res, next) => {
+    let photoUrl = null;
+
+    if (req.file) {
+      photoUrl = await saveFileToCloudinary(req.file);
+    }
+
+    req.body.photo = photoUrl;
+
+    return createContactController(req, res, next);
+  }),
 );
 
 contactsRouter.patch(
   '/:contactId',
   authenticate,
   isValidId,
+  upload.single('photo'),
   validateBody(contactUpdateSchema),
-  ctrlWrapper(updateContactController),
+  ctrlWrapper(async (req, res, next) => {
+    let photoUrl = null;
+
+    if (req.file) {
+      photoUrl = await saveFileToCloudinary(req.file);
+      req.body.photo = photoUrl;
+    }
+
+    return updateContactController(req, res, next);
+  }),
 );
 
 contactsRouter.delete(
