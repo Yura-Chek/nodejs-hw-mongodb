@@ -17,10 +17,11 @@ import {
   contactUpdateSchema,
 } from '../validation/contacts.js';
 import { authenticate } from '../middlewares/auth.js';
+import { upload } from '../middlewares/upload.js';
 
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 
-const upload = multer({ dest: 'temp/' });
+// const upload = multer({ dest: 'temp/' });
 
 export const contactsRouter = express.Router();
 

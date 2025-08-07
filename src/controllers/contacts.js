@@ -60,7 +60,8 @@ export const getContactByIdController = async (req, res) => {
 };
 
 export const createContactController = async (req, res) => {
-  const { name, phoneNumber, email, isFavourite, contactType } = req.body;
+  const { name, phoneNumber, email, isFavourite, contactType, photo } =
+    req.body;
   const { id: userId } = req.user;
 
   if (!name || !phoneNumber || !contactType) {
@@ -77,6 +78,7 @@ export const createContactController = async (req, res) => {
       email,
       isFavourite,
       contactType,
+      photo,
     },
     userId,
   );
