@@ -1,0 +1,32 @@
+description: Create contact data
+required: true
+content:
+  application/json:
+    schema:
+      type: object
+      required:
+        - name
+        - phoneNumber
+        - contactType
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 20
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+          minLength: 3
+          maxLength: 20
+        isFavourite:
+          type: boolean
+        contactType:
+          type: string
+          enum:
+            - personal
+            - home
+            - work
+        photo:
+          type: string

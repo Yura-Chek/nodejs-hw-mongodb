@@ -1,0 +1,62 @@
+tags:
+  - Contacts
+summary: Get all contacts
+operationId: getContacts
+description: Retrieve paginated list of contacts.
+security:
+  - bearerAuth: []
+parameters:
+  - name: page
+    in: query
+    schema:
+      type: integer
+    description: Page number (default 1)
+  - name: perPage
+    in: query
+    schema:
+      type: integer
+    description: Number of items per page (default 10)
+  - name: sortBy
+    in: query
+    schema:
+      type: string
+    description: Field to sort by
+  - name: sortOrder
+    in: query
+    schema:
+      type: string
+      enum:
+        - asc
+        - desc
+    description: Sort order
+responses:
+  '200':
+    description: List of contacts with pagination
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+            message:
+              type: string
+            data:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '../../components/schemas/contact.yaml'
+                page:
+                  type: integer
+                perPage:
+                  type: integer
+                totalItems:
+                  type: integer
+                totalPages:
+                  type: integer
+                hasPreviousPage:
+                  type: boolean
+                hasNextPage:
+                  type: boolean

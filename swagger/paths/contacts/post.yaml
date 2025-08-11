@@ -1,0 +1,25 @@
+tags:
+  - Contacts
+summary: Create a new contact
+operationId: createContact
+description: Create a new contact.
+security:
+  - bearerAuth: []
+requestBody:
+  $ref: '../../components/requestBodies/contactCreate.yaml'
+responses:
+  '201':
+    description: Contact successfully created
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+            message:
+              type: string
+            data:
+              $ref: '../../components/schemas/contact.yaml'
+  '400':
+    description: Validation error

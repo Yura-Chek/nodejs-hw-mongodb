@@ -1,0 +1,40 @@
+openapi: 3.1.0
+info:
+  version: 1.0.0
+  title: Контактна книга
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  description: |
+    REST API для управління контактами та користувачами.
+    Підтримує реєстрацію, логін, оновлення токенів, CRUD для приватної колекції контактів,
+    завантаження зображень у Cloudinary та надсилання листів для відновлення пароля.
+tags:
+  - name: Contacts
+    description: Контакти користувача
+servers:
+  - url: http://localhost:3000
+  - url: https://nodejs-hw-mongodb-i3x6.onrender.com
+paths:
+  /contacts:
+    get:
+      $ref: '../swagger/paths/contacts/get.yaml'
+    post:
+      $ref: '../swagger/paths/contacts/post.yaml'
+  /contacts/{contactId}:
+    get:
+      $ref: '../swagger/paths/contacts/{contactId}/get.yaml'
+    patch:
+      $ref: '../swagger/paths/contacts/{contactId}/patch.yaml'
+    delete:
+      $ref: '../swagger/paths/contacts/{contactId}/delete.yaml'
+components:
+  schemas:
+    Contact:
+      $ref: '../swagger/components/schemas/contact.yaml'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
