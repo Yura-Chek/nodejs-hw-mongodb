@@ -1,19 +1,16 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: Контактна книга
+  title: Contacts
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: |
-    REST API для управління контактами та користувачами.
-    Підтримує реєстрацію, логін, оновлення токенів, CRUD для приватної колекції контактів,
-    завантаження зображень у Cloudinary та надсилання листів для відновлення пароля.
+  description: Documentation of contacts app
 tags:
   - name: Contacts
-    description: Контакти користувача
+    description: Operations with contacts
 servers:
-  - url: http://localhost:3000
+  - url: http://127.0.0.1:3000
   - url: https://nodejs-hw-mongodb-i3x6.onrender.com
 paths:
   /contacts:
