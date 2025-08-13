@@ -1,7 +1,7 @@
 description: Update contact data
 required: true
 content:
-  application/json:
+  multipart/form-data:
     schema:
       type: object
       properties:
@@ -26,3 +26,4 @@ content:
             - work
         photo:
           type: string
+          format: binary

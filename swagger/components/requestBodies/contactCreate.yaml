@@ -1,7 +1,7 @@
 description: Create contact data
 required: true
 content:
-  application/json:
+  multipart/form-data:
     schema:
       type: object
       required:
@@ -30,3 +30,4 @@ content:
             - work
         photo:
           type: string
+          format: binary
